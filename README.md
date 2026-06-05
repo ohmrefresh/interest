@@ -4,7 +4,7 @@ A Thai-language web app that calculates deposit interest using **tiered interest
 full monthly and per-day breakdowns and support for mid-term deposits/withdrawals (Fund In / Fund
 Out). Built with Vite + TypeScript and deployed to GitHub Pages.
 
-**Live:** https://ohmrefresh.github.io/interest/
+**Live:** https://ohmrefresh.github.io/deposit-interest/
 
 ## Preview
 
@@ -64,7 +64,7 @@ The `build` script is **type-gated**: `tsc` runs first and a build fails on any 
 │   ├── main.ts             # All app logic: state, math, rendering, event wiring
 │   ├── style.css           # Styles
 │   └── vite-env.d.ts       # Vite client type reference
-├── vite.config.ts          # base: '/interest/' for GitHub Pages
+├── vite.config.ts          # base: '/deposit-interest/' for GitHub Pages
 ├── tsconfig.json           # strict, modern browser target
 ├── .github/workflows/
 │   └── deploy.yml          # Build + publish dist/ to gh-pages on push to main
@@ -79,9 +79,9 @@ the calculator works correctly as an ES module under Vite.
 Every push to `main` triggers `.github/workflows/deploy.yml`, which builds the app and publishes
 `dist/` to the `gh-pages` branch via
 [`peaceiris/actions-gh-pages`](https://github.com/peaceiris/actions-gh-pages). GitHub Pages serves
-that branch at https://ohmrefresh.github.io/interest/.
+that branch at https://ohmrefresh.github.io/deposit-interest/.
 
-> **Base path:** `vite.config.ts` sets `base: '/interest/'` so assets resolve under the project
+> **Base path:** `vite.config.ts` sets `base: '/deposit-interest/'` so assets resolve under the project
 > sub-path. If the repository is renamed, update this value to match.
 
 ### First-time Pages setup

@@ -75,7 +75,7 @@ function byId<T extends HTMLElement = HTMLElement>(id: string): T {
 // ---------- State ----------
 // ข้อมูลชั้นอัตราดอกเบี้ยเริ่มต้น
 let tiers: Tier[] = [
-  { min: '0.01', max: '1000000.00', rate: '2.00' },
+  { min: '0.00', max: '1000000.00', rate: '2.00' },
   { min: '1000000.01', max: '2000000.00', rate: '1.50' },
   { min: '2000000.01', max: '', rate: '0.50' },
 ]
@@ -340,7 +340,7 @@ function validateInputs(): boolean {
   // ตรวจสอบรายการฝาก/ถอน
   if (transactions.length > 0 && startDate && endDate) {
     for (const tx of transactions) {
-      const txInvalid = !tx.date || tx.date <= startDate || tx.date > endDate || parseFloat(tx.amount) <= 0
+      const txInvalid = !tx.date || tx.date < startDate || tx.date > endDate || parseFloat(tx.amount) <= 0
       if (txInvalid) {
         byId('transactionError').classList.add('show')
         isValid = false
@@ -466,7 +466,7 @@ function calculateInterestWithApply(
 ): CalcResult {
   // เรียงและกรอง transaction ที่ถูกต้อง
   const sortedTxs = [...transactions]
-    .filter((tx) => tx.date > startDate && tx.date <= endDate && parseFloat(tx.amount) > 0)
+    .filter((tx) => tx.date >= startDate && tx.date <= endDate && parseFloat(tx.amount) > 0)
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
   const breakdown: BreakdownRow[] = []
@@ -558,6 +558,20 @@ function calculateInterestWithApply(
       })
       monthIndex++
       continue
+    }
+
+    // Transactions exactly on monthStartStr are excluded from monthTxs (> filter) to avoid
+    // degenerate 0-day breakpoints that the sub-period loop skips. Apply them here first.
+    for (const tx of sortedTxs.filter((t) => t.date === monthStartStr)) {
+      const txAmt = new Decimal(tx.amount)
+      const before = new Decimal(currentBalance)
+      currentBalance = tx.type === 'in'
+        ? currentBalance.plus(txAmt)
+        : Decimal.max(new Decimal(0), currentBalance.minus(txAmt))
+      txEvents.push({
+        date: monthStartStr, type: tx.type, amount: txAmt.toString(),
+        balanceBefore: before.toString(), balanceAfter: currentBalance.toString(),
+      })
     }
 
     // Non-daily: คำนวณดอกเบี้ยแต่ละ sub-period ระหว่าง breakpoints
@@ -785,7 +799,7 @@ function displayResults(
 
   // เตรียม validDisplayTxs สำหรับใช้ในทุกเดือน
   const validDisplayTxs = [...transactions]
-    .filter((tx) => tx.date > depositStartDate && tx.date <= depositEndDate && parseFloat(tx.amount) > 0)
+    .filter((tx) => tx.date >= depositStartDate && tx.date <= depositEndDate && parseFloat(tx.amount) > 0)
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
   // วนลูปแต่ละเดือน
@@ -845,7 +859,7 @@ function displayResults(
       const monthTxsForBalance = validDisplayTxs.filter((tx) => {
         const ms = toLocalDateString(actualMonthStart)
         const me = toLocalDateString(actualEnd)
-        return tx.date > ms && tx.date <= me
+        return tx.date >= ms && tx.date <= me
       })
       for (const tx of monthTxsForBalance) {
         const txAmt = new Decimal(tx.amount)

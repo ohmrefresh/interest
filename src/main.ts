@@ -965,21 +965,21 @@ function displayResults(
       currentBalance = new Decimal(dayBalanceInMonth)
       dailyDetailHTML = dailyDetailHTML.replace('__END_BAL__', formatNumber(currentBalance.toString()))
     }
-    dailyDetailHTML += `<tr style="background: #e0f2fe; font-weight: bold; border-top: 2px solid #7dd3fc;">`
-    dailyDetailHTML += `<td style="padding: 8px; border: 1px solid #bae6fd; color: #0369a1;">รวมดอกเบี้ยแต่ละชั้น</td>`
+    dailyDetailHTML += `<tr style="font-weight: bold; border-top: 2px solid #7dd3fc;">`
+    dailyDetailHTML += `<td style="padding: 8px; border: 1px solid #bae6fd; background: #e0f2fe; color: #0369a1;">รวมดอกเบี้ยแต่ละชั้น</td>`
     tierMonthlyTotals.forEach((total) => {
-      dailyDetailHTML += `<td style="padding: 8px; border: 1px solid #bae6fd; text-align: right; color: #0369a1;">${formatNumber(total.toString(), 10)}</td>`
+      dailyDetailHTML += `<td style="padding: 8px; border: 1px solid #bae6fd; background: #e0f2fe; text-align: right; color: #0369a1;">${formatNumber(total.toString(), 10)}</td>`
     })
     dailyDetailHTML += `</tr>`
 
     // แถวสรุปดอกเบี้ยรวมทั้งหมดของเดือนนี้
-    dailyDetailHTML += `<tr style="background: #0284c7; font-weight: bold;">`
-    dailyDetailHTML += `<td style="padding: 10px 8px; border: 1px solid #0369a1; color: #fff;">รวมดอกเบี้ยเดือนนี้</td>`
+    dailyDetailHTML += `<tr style="font-weight: bold;">`
+    dailyDetailHTML += `<td style="padding: 10px 8px; border: 1px solid #0369a1; background: #0284c7; color: #fff;">รวมดอกเบี้ยเดือนนี้</td>`
     tierMonthlyTotals.forEach((_, idx) => {
       if (idx === tierMonthlyTotals.length - 1) {
-        dailyDetailHTML += `<td style="padding: 10px 8px; border: 1px solid #0369a1; text-align: right; color: #fff; font-size: 1rem;">${formatNumber(grandTotalMonth.toString(), 10)}</td>`
+        dailyDetailHTML += `<td style="padding: 10px 8px; border: 1px solid #0369a1; background: #0284c7; text-align: right; color: #fff; font-size: 1rem;">${formatNumber(grandTotalMonth.toString(), 10)}</td>`
       } else {
-        dailyDetailHTML += `<td style="padding: 10px 8px; border: 1px solid #0369a1;"></td>`
+        dailyDetailHTML += `<td style="padding: 10px 8px; border: 1px solid #0369a1; background: #0284c7;"></td>`
       }
     })
     dailyDetailHTML += `</tr>`

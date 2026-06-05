@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Share config via link: "Copy share link" button in Results encodes full calculator state
+  (deposit, dates, interest type/apply, tiers, transactions) as base64 JSON in the URL hash
+  (`#cfg=…`). Opening a shared link pre-fills the form and auto-calculates.
+
 ## [0.1.0] — 2026-06-05
 
 Initial Vite + TypeScript scaffold and deployment of the tiered deposit interest calculator.

@@ -303,3 +303,17 @@ tr:hover td {
         padding: 10px 8px;
     }
 }
+
+.btn-share {
+    background: #fff;
+    border: 2px solid #0284c7;
+    color: #0284c7;
+    margin-top: 16px;
+    width: 100%;
+}
+
+.btn-share--copied {
+    background: #16a34a !important;
+    border-color: #16a34a !important;
+    color: #fff !important;
+}

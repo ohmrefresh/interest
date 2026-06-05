@@ -736,6 +736,7 @@ function displayResults(
     </div>
   `
   byId('resultSummary').innerHTML = summaryHTML
+  byId('shareContainer').innerHTML = '<button id="shareBtn" class="btn btn-share">🔗 Copy share link</button>'
 
   // แสดงตารางแบ่งตามชั้น
   let tierTableHTML = `
@@ -1115,8 +1116,77 @@ function wireEvents(): void {
     const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-action="removeTransaction"]')
     if (btn) removeTransaction(Number(btn.dataset.index))
   })
+
+  byId('results').addEventListener('click', (e) => {
+    if ((e.target as HTMLElement).id === 'shareBtn') copyShareLink()
+  })
+}
+
+// ---------- Share via URL hash ----------
+
+interface ShareState {
+  depositAmount: string
+  startDate: string
+  endDate: string
+  interestType: string
+  interestApply: string
+  tiers: Tier[]
+  transactions: Transaction[]
+}
+
+function encodeState(): string {
+  const state: ShareState = {
+    depositAmount: parseInputValue(byId<HTMLInputElement>('depositAmount').value),
+    startDate: byId<HTMLInputElement>('startDate').value,
+    endDate: byId<HTMLInputElement>('endDate').value,
+    interestType: byId<HTMLSelectElement>('interestType').value,
+    interestApply: byId<HTMLSelectElement>('interestApply').value,
+    tiers,
+    transactions,
+  }
+  return btoa(JSON.stringify(state))
+}
+
+function decodeState(hash: string): ShareState | null {
+  try {
+    return JSON.parse(atob(hash.replace(/^#cfg=/, ''))) as ShareState
+  } catch {
+    return null
+  }
+}
+
+function restoreFromHash(): void {
+  const hash = window.location.hash
+  if (!hash.startsWith('#cfg=')) return
+  const s = decodeState(hash)
+  if (!s) return
+  byId<HTMLInputElement>('depositAmount').value = formatNumber(s.depositAmount)
+  byId<HTMLInputElement>('startDate').value = s.startDate
+  byId<HTMLInputElement>('endDate').value = s.endDate
+  byId<HTMLSelectElement>('interestType').value = s.interestType
+  byId<HTMLSelectElement>('interestApply').value = s.interestApply
+  tiers = s.tiers
+  transactions = s.transactions
+  renderTiers()
+  renderTransactions()
+  calculate()
+}
+
+function copyShareLink(): void {
+  const url = `${location.origin}${location.pathname}#cfg=${encodeState()}`
+  navigator.clipboard.writeText(url).catch(() => {
+    // clipboard API unavailable (non-HTTPS, non-localhost) — silently skip
+  })
+  const btn = byId<HTMLButtonElement>('shareBtn')
+  btn.textContent = '✓ Link copied!'
+  btn.classList.add('btn-share--copied')
+  setTimeout(() => {
+    btn.textContent = '🔗 Copy share link'
+    btn.classList.remove('btn-share--copied')
+  }, 2000)
 }
 
 // เริ่มต้นเมื่อโหลดหน้าเว็บ (module scripts ถูก defer → DOM พร้อมแล้ว)
 init()
 wireEvents()
+restoreFromHash()

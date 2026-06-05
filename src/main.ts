@@ -291,6 +291,12 @@ function formatNumber(value: Decimal.Value, decimals: number = 2): string {
   return parts.join('.')
 }
 
+// การ์ดที่มีค่ายาวเกินขนาด grid cell (>= 12 หลัก) จะถูกแยกออกเป็น full-width row
+// เพื่อไม่ให้ track ของ auto-fit grid ขยายจนเบียดการ์ดอื่น
+function shouldRenderWide(formatted: string): boolean {
+  return formatted.replace(/\D/g, '').length > 11
+}
+
 // ตรวจสอบความถูกต้องของข้อมูล
 function validateInputs(): boolean {
   let isValid = true
@@ -751,33 +757,46 @@ function displayResults(
   }
 
   // แสดงสรุปผล
+  const cardClass = (base: string, wide: boolean) =>
+    wide ? `${base} result-card--wide` : base
+  const depositStr = formatNumber(depositAmount)
+  const daysStr = String(totalDays)
+  const interestStr = formatNumber(totalInterest)
+  const finalStr = formatNumber(finalAmount)
+  const depositWide = shouldRenderWide(depositStr)
+  const daysWide = shouldRenderWide(daysStr)
+  const interestWide = shouldRenderWide(interestStr)
+  const finalWide = shouldRenderWide(finalStr)
+
   let summaryHTML = `
-    <div class="result-card" style="--i: 0">
+    <div class="${cardClass('result-card', depositWide)}" style="--i: 0">
         <div class="label">จำนวนเงินฝาก</div>
-        <div class="value">${formatNumber(depositAmount)} ฿</div>
+        <div class="value">${depositStr} ฿</div>
     </div>
-    <div class="result-card" style="--i: 1">
+    <div class="${cardClass('result-card', daysWide)}" style="--i: 1">
         <div class="label">จำนวนวันทั้งหมด</div>
-        <div class="value">${totalDays}</div>
+        <div class="value">${daysStr}</div>
     </div>
-    <div class="result-card highlight" style="--i: 2">
+    <div class="${cardClass('result-card highlight', interestWide)}" style="--i: 2">
         <div class="label">ดอกเบี้ยทั้งหมด</div>
-        <div class="value">${formatNumber(totalInterest)} ฿</div>
+        <div class="value">${interestStr} ฿</div>
     </div>`
 
   // เพิ่มแสดง Interest Accrued ถ้ามี
   if (accruedInterest && parseFloat(accruedInterest) > 0) {
+    const accruedStr = formatNumber(accruedInterest)
+    const accruedWide = shouldRenderWide(accruedStr)
     summaryHTML += `
-    <div class="result-card highlight--warning" style="--i: 3">
+    <div class="${cardClass('result-card highlight--warning', accruedWide)}" style="--i: 3">
         <div class="label">ดอกเบี้ยค้างจ่าย</div>
-        <div class="value">${formatNumber(accruedInterest)} ฿</div>
+        <div class="value">${accruedStr} ฿</div>
     </div>`
   }
 
   summaryHTML += `
-    <div class="result-card highlight" style="--i: ${accruedInterest && parseFloat(accruedInterest) > 0 ? 4 : 3}">
+    <div class="${cardClass('result-card highlight', finalWide)}" style="--i: ${accruedInterest && parseFloat(accruedInterest) > 0 ? 4 : 3}">
         <div class="label">ยอดรวมทั้งสิ้น</div>
-        <div class="value">${formatNumber(finalAmount)} ฿</div>
+        <div class="value">${finalStr} ฿</div>
     </div>
   `
   byId('resultSummary').innerHTML = summaryHTML

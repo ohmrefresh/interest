@@ -553,6 +553,46 @@ h3.legacy-inline {
   font-weight: var(--w-bold);
 }
 
+/* การ์ดที่มีค่ายาวเกิน grid cell จะถูกแยกเป็น full-width row เพื่อไม่ให้
+   track ของ auto-fit grid ขยายจนเบียดการ์ดอื่น */
+.result-card--wide {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  transition: grid-column 60ms var(--ease-out-quart),
+              font-size 60ms var(--ease-out-quart);
+}
+.result-card--wide .value { font-size: 28px; }
+
+/* เมื่อการ์ด highlight (ดอกเบี้ยทั้งหมด / ยอดรวมทั้งสิ้น) ขยายเป็น wide row
+   ให้ใช้ sky accent แทน dark hero เพื่อให้อ่านง่ายในแนวนอน */
+.result-card--wide.highlight {
+  background: var(--paper);
+  border: 2px solid var(--sky-700);
+}
+.result-card--wide.highlight .label { color: var(--sky-700); }
+.result-card--wide.highlight .value {
+  color: var(--sky-700);
+  font-weight: var(--w-extra);
+  font-size: 28px; /* override .highlight .value's --text-3xl (36px) */
+}
+
+@media (max-width: 640px) {
+  /* Stack label above value on narrow phones so the long number gets
+     the full card width and stays on one line at a smaller size */
+  .result-card--wide {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .result-card--wide .value { font-size: 18px; }
+  .result-card--wide.highlight .value { font-size: 18px; }
+}
+
 #shareContainer {
   margin-top: var(--space-4);
   margin-bottom: var(--space-6);

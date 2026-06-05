@@ -81,6 +81,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   inline `style="…"` attributes were replaced with class modifiers
   (`.tx-row`, `.tier-header`, `.monthly-totals`, `.monthly-grand-total`,
   `.day-cell--empty`) for token-driven theming.
+- Wide-amount layout pass: any summary card whose value has more than
+  11 digits (e.g., deposit ≥ 100,000,000,000 or interest in the
+  trillions) now breaks out of the auto-fit grid into a full-width row
+  with the label on the left and the value on the right. The
+  highlight cards (ดอกเบี้ยทั้งหมด, ยอดรวมทั้งสิ้น) keep their visual
+  emphasis in the wide state via a `var(--sky-700)` accent border and
+  sky text instead of the dark-ink hero, which reads more clearly when
+  the card spans the full row. Detection is a digit-count check on the
+  formatted string (no layout measurement, no font-load dependency) in
+  a new `shouldRenderWide()` helper in `src/main.ts`. The 60ms
+  `--ease-out-quart` transition on `grid-column` and `font-size`
+  smooths the layout jump on live recompute when a value crosses the
+  threshold. At ≤ 640px the wide-card value drops from 28px → 18px
+  and the layout switches to column (label stacked above value) so
+  20-character values fit on a 390px phone without clipping. A new
+  `vite.config.ts` `preview: { host: true }` setting lets the preview
+  server bind to 0.0.0.0 so the screenshot scripts' `127.0.0.1` URL
+  works again (Node 26 / macOS dual-stack regression). Two new
+  `screenshot-results-wide-*.png` cases (1280×900 desktop, 390×844
+  mobile) capture the wide-amount layout. Spec:
+  `docs/superpowers/specs/2026-06-05-results-large-amount-redesign-design.md`.
 
 ## [0.1.0] — 2026-06-05
 

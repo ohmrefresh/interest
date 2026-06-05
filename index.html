@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คำนวณดอกเบี้ยเงินฝาก</title>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏦 คำนวณดอกเบี้ยเงินฝาก</h1>
+            <p>คำนวณดอกเบี้ยแบบแบ่งชั้นอัตราดอกเบี้ย พร้อมรายละเอียดรายเดือน</p>
+        </div>
+
+        <div class="content">
+            <!-- ข้อมูลเงินฝาก -->
+            <div class="section">
+                <h2 class="section-title">📊 ข้อมูลเงินฝาก</h2>
+
+                <div class="form-group">
+                    <label for="depositAmount">จำนวนเงินฝาก (บาท)</label>
+                    <input type="text" id="depositAmount" placeholder="0.00" inputmode="decimal">
+                    <div class="error" id="depositError">กรุณากรอกจำนวนเงินฝากที่มากกว่า 0</div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="startDate">วันที่เริ่มต้น</label>
+                        <input type="date" id="startDate">
+                        <div class="error" id="startDateError">กรุณาเลือกวันที่เริ่มต้น</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">วันที่สิ้นสุด</label>
+                        <input type="date" id="endDate">
+                        <div class="error" id="endDateError">วันที่สิ้นสุดต้องมากกว่าวันที่เริ่มต้น</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="interestType">ประเภทการคำนวณดอกเบี้ย</label>
+                    <select id="interestType">
+                        <option value="simple">ดอกเบี้ยแบบธรรมดา (Simple Interest)</option>
+                        <option value="compound">ดอกเบี้ยทบต้นรายปี (Compound Interest - Yearly)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="interestApply">การ Apply ดอกเบี้ย</label>
+                    <select id="interestApply">
+                        <option value="daily">ทุกวัน (Daily)</option>
+                        <option value="monthly">รายเดือน (Monthly)</option>
+                        <option value="biannually">ทุก 6 เดือน (Biannually)</option>
+                        <option value="annually">รายปี (Annually)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- อัตราดอกเบี้ยแบบแบ่งชั้น -->
+            <div class="section">
+                <h2 class="section-title">💰 อัตราดอกเบี้ยแบบแบ่งชั้น</h2>
+                <div id="tiersContainer"></div>
+                <button class="btn btn-add" id="addTierBtn">+ เพิ่มชั้นอัตราดอกเบี้ย</button>
+                <div class="error" id="tierError">กรุณาตั้งค่าอัตราดอกเบี้ยอย่างน้อย 1 ชั้น</div>
+            </div>
+
+            <!-- รายการฝาก/ถอน -->
+            <div class="section">
+                <h2 class="section-title">💳 รายการฝาก/ถอน (Fund In / Fund Out)</h2>
+                <div id="transactionsContainer"></div>
+                <button class="btn btn-add" id="addTransactionBtn">+ เพิ่มรายการฝาก/ถอน</button>
+                <div class="error" id="transactionError">กรุณาตรวจสอบข้อมูลรายการฝาก/ถอน (วันที่ต้องอยู่ระหว่างวันเริ่มต้นและสิ้นสุด และจำนวนเงินต้องมากกว่า 0)</div>
+            </div>
+
+            <!-- ปุ่มคำนวณ -->
+            <button class="btn btn-primary btn-calculate" id="calculateBtn">🧮 คำนวณดอกเบี้ย</button>
+
+            <!-- ผลการคำนวณ -->
+            <div class="results" id="results">
+                <h2 class="section-title">📈 ผลการคำนวณ</h2>
+
+                <div class="result-summary" id="resultSummary"></div>
+
+                <div class="section">
+                    <h3 style="color: #333; margin-bottom: 15px;">รายละเอียดตามชั้นอัตราดอกเบี้ย</h3>
+                    <div style="overflow-x: auto;">
+                        <table id="tierBreakdownTable"></table>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3 style="color: #333; margin-bottom: 15px;">รายละเอียดรายเดือน</h3>
+                    <div style="overflow-x: auto;">
+                        <table id="monthlyBreakdownTable"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

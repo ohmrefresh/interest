@@ -6,6 +6,12 @@ Out). Built with Vite + TypeScript and deployed to GitHub Pages.
 
 **Live:** https://ohmrefresh.github.io/interest/
 
+## Preview
+
+<img src="doc/images/screenshot-form.png" width="800" alt="Calculator form">
+
+<img src="doc/images/screenshot-results.png" width="800" alt="Calculation results">
+
 ## Features
 
 - **Tiered interest rates** — define any number of balance brackets, each with its own rate

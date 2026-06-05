@@ -3,11 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="คำนวณดอกเบี้ยเงินฝากแบบแบ่งชั้นอัตราดอกเบี้ย รองรับดอกเบี้ยธรรมดา ดอกเบี้ยทบต้น รายการฝาก/ถอนระหว่างทาง และแชร์ผลลัพธ์ผ่านลิงก์">
     <title>คำนวณดอกเบี้ยเงินฝาก</title>
 </head>
 <body>
     <div class="container">
         <div class="header">
+            <div class="header-actions">
+                <button id="shareBtnTop" class="btn btn-share-top" type="button" disabled>
+                    <span aria-hidden="true">🔗</span> แชร์ค่านี้
+                </button>
+            </div>
             <h1>🏦 คำนวณดอกเบี้ยเงินฝาก</h1>
             <p>คำนวณดอกเบี้ยแบบแบ่งชั้นอัตราดอกเบี้ย พร้อมรายละเอียดรายเดือน</p>
         </div>
@@ -15,24 +21,25 @@
         <div class="content">
             <!-- ข้อมูลเงินฝาก -->
             <div class="section">
-                <h2 class="section-title">📊 ข้อมูลเงินฝาก</h2>
+                <h2 class="section-title">ข้อมูลเงินฝาก</h2>
 
                 <div class="form-group">
                     <label for="depositAmount">จำนวนเงินฝาก (บาท)</label>
-                    <input type="text" id="depositAmount" placeholder="0.00" inputmode="decimal">
-                    <div class="error" id="depositError">กรุณากรอกจำนวนเงินฝากที่มากกว่า 0</div>
+                    <input type="text" id="depositAmount" placeholder="0.00" inputmode="decimal"
+                           aria-describedby="depositError">
+                    <div class="error" id="depositError" role="alert">กรุณากรอกจำนวนเงินฝาก เช่น 100,000 บาท</div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="startDate">วันที่เริ่มต้น</label>
-                        <input type="date" id="startDate">
-                        <div class="error" id="startDateError">กรุณาเลือกวันที่เริ่มต้น</div>
+                        <input type="date" id="startDate" aria-describedby="startDateError">
+                        <div class="error" id="startDateError" role="alert">กรุณาเลือกวันที่เริ่มต้น</div>
                     </div>
                     <div class="form-group">
                         <label for="endDate">วันที่สิ้นสุด</label>
-                        <input type="date" id="endDate">
-                        <div class="error" id="endDateError">วันที่สิ้นสุดต้องมากกว่าวันที่เริ่มต้น</div>
+                        <input type="date" id="endDate" aria-describedby="endDateError">
+                        <div class="error" id="endDateError" role="alert">วันที่สิ้นสุดต้องมากกว่าวันที่เริ่มต้น</div>
                     </div>
                 </div>
 
@@ -45,54 +52,70 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="interestApply">การ Apply ดอกเบี้ย</label>
-                    <select id="interestApply">
+                    <label for="interestApply">รอบการจ่ายดอกเบี้ย</label>
+                    <select id="interestApply" aria-describedby="interestApplyHint">
                         <option value="daily">ทุกวัน (Daily)</option>
                         <option value="monthly">รายเดือน (Monthly)</option>
                         <option value="biannually">ทุก 6 เดือน (Biannually)</option>
                         <option value="annually">รายปี (Annually)</option>
                     </select>
+                    <div id="interestApplyHint" class="visually-hidden">กำหนดความถี่ในการนำดอกเบี้ยเข้าเงินต้น</div>
                 </div>
             </div>
 
             <!-- อัตราดอกเบี้ยแบบแบ่งชั้น -->
             <div class="section">
-                <h2 class="section-title">💰 อัตราดอกเบี้ยแบบแบ่งชั้น</h2>
+                <h2 class="section-title">อัตราดอกเบี้ยแบบแบ่งชั้น</h2>
                 <div id="tiersContainer"></div>
-                <button class="btn btn-add" id="addTierBtn">+ เพิ่มชั้นอัตราดอกเบี้ย</button>
-                <div class="error" id="tierError">กรุณาตั้งค่าอัตราดอกเบี้ยอย่างน้อย 1 ชั้น</div>
+                <button class="btn btn-add" id="addTierBtn" type="button">+ เพิ่มชั้นอัตราดอกเบี้ย</button>
+                <div class="error" id="tierError" role="alert">กรุณาตั้งค่าอัตราดอกเบี้ยอย่างน้อย 1 ชั้น</div>
             </div>
 
             <!-- รายการฝาก/ถอน -->
             <div class="section">
-                <h2 class="section-title">💳 รายการฝาก/ถอน (Fund In / Fund Out)</h2>
+                <h2 class="section-title">รายการฝาก/ถอน (Fund In / Fund Out)</h2>
                 <div id="transactionsContainer"></div>
-                <button class="btn btn-add" id="addTransactionBtn">+ เพิ่มรายการฝาก/ถอน</button>
-                <div class="error" id="transactionError">กรุณาตรวจสอบข้อมูลรายการฝาก/ถอน (วันที่ต้องอยู่ระหว่างวันเริ่มต้นและสิ้นสุด และจำนวนเงินต้องมากกว่า 0)</div>
+                <button class="btn btn-add" id="addTransactionBtn" type="button">+ เพิ่มรายการฝาก/ถอน</button>
+                <div class="error" id="transactionError" role="alert">กรุณาตรวจสอบข้อมูลรายการฝาก/ถอน (วันที่ต้องอยู่ระหว่างวันเริ่มต้นและสิ้นสุด และจำนวนเงินต้องมากกว่า 0)</div>
             </div>
 
-            <!-- ปุ่มคำนวณ -->
-            <button class="btn btn-primary btn-calculate" id="calculateBtn">🧮 คำนวณดอกเบี้ย</button>
+            <!-- ปุ่มคำนวณ + ล้างค่า -->
+            <div class="form-actions">
+                <button class="btn btn-primary btn-calculate" id="calculateBtn" type="button">🧮 คำนวณดอกเบี้ย</button>
+                <button class="btn btn-secondary btn-reset" id="resetBtn" type="button">ล้างค่า</button>
+            </div>
 
             <!-- ผลการคำนวณ -->
-            <div class="results" id="results">
-                <h2 class="section-title">📈 ผลการคำนวณ</h2>
+            <div class="results" id="results" aria-live="polite" aria-atomic="true">
+                <h2 class="section-title">ผลการคำนวณ</h2>
 
                 <div class="result-summary" id="resultSummary"></div>
                 <div id="shareContainer"></div>
 
                 <div class="section">
-                    <h3 style="color: #333; margin-bottom: 15px;">รายละเอียดตามชั้นอัตราดอกเบี้ย</h3>
-                    <div style="overflow-x: auto;">
+                    <h3 class="legacy-inline">รายละเอียดตามชั้นอัตราดอกเบี้ย</h3>
+                    <div class="table-scroll">
                         <table id="tierBreakdownTable"></table>
                     </div>
                 </div>
 
                 <div class="section">
-                    <h3 style="color: #333; margin-bottom: 15px;">รายละเอียดรายเดือน</h3>
-                    <div style="overflow-x: auto;">
+                    <h3 class="legacy-inline">รายละเอียดรายเดือน</h3>
+                    <div class="table-scroll">
                         <table id="monthlyBreakdownTable"></table>
                     </div>
+                </div>
+
+                <div class="section">
+                    <details id="dailyDetails" class="daily-section">
+                        <summary>
+                            <span class="daily-summary-label">รายละเอียดการคิดดอกเบี้ยรายวันของแต่ละชั้น (แบ่งตามเดือน)</span>
+                            <span class="daily-summary-hint" id="dailySummaryHint">กดเพื่อขยาย — ตารางนี้มีหลายร้อยถึงหลายพันแถว</span>
+                        </summary>
+                        <div id="dailyDetailContent" aria-live="polite">
+                            <p class="empty-state">กดหัวข้อด้านบนเพื่อสร้างตารางรายวัน</p>
+                        </div>
+                    </details>
                 </div>
             </div>
         </div>

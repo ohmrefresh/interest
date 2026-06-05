@@ -5,3 +5,7 @@ dist
 .vscode/*
 !.vscode/extensions.json
 .superpowers/
+graphify-out/*
+.claude/
+.impeccable
+.github/skills/

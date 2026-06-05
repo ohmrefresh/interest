@@ -22,6 +22,7 @@ Out). Built with Vite + TypeScript and deployed to GitHub Pages.
   recomputes per sub-period around each transaction.
 - **Detailed output** — summary cards, per-tier breakdown, a per-month apply table, and an
   expandable day-by-day, tier-by-tier interest table.
+- **Shareable links** — copy a URL that pre-fills and auto-calculates with your exact inputs.
 - **High precision** — all money math uses [decimal.js](https://github.com/MikeMcl/decimal.js)
   (50-digit precision, `ROUND_HALF_UP`); real-calendar day counts with leap-year handling.
 
@@ -92,4 +93,4 @@ push to `main`, let the workflow create the `gh-pages` branch, then enable Pages
 
 ## License
 
-No license specified.
+[MIT](LICENSE)

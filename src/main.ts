@@ -749,7 +749,8 @@ function displayResults(
   // Reveal the result cards with a stagger only on the first show of this
   // calculation session. Live recompute (after the user starts editing again)
   // updates the values in place without re-firing the entrance animation.
-  if (!hasRevealedResults) {
+  const firstReveal = !hasRevealedResults
+  if (firstReveal) {
     const resultsEl = byId('results')
     resultsEl.setAttribute('data-reveal', '1')
     hasRevealedResults = true
@@ -847,7 +848,10 @@ function displayResults(
   )
   lastDayByDayFingerprint = dayByDayFingerprint
   if (isDailyDetailsOpen()) {
-    buildDailyDetail()
+    // Only rebuild the (expensive, ~1945-row) table when the inputs that
+    // feed it actually changed. A recompute triggered by editing an
+    // unrelated field leaves the fingerprint untouched, so we skip it.
+    if (lastDayByDayBuiltFingerprint !== dayByDayFingerprint) buildDailyDetail()
   } else {
     // Show the "stale" hint only if the user has previously opened
     // the disclosure and then closed it. New users see the
@@ -914,8 +918,11 @@ function displayResults(
   // แสดงส่วนผลลัพธ์
   byId('results').classList.add('show')
 
-  // เลื่อนไปยังผลลัพธ์
-  byId('results').scrollIntoView({ behavior: 'smooth' })
+  // เลื่อนไปยังผลลัพธ์เฉพาะตอนแสดงผลครั้งแรกของรอบการคำนวณ — live recompute
+  // ระหว่างพิมพ์ต้องไม่ดึงหน้าจอออกจากช่องที่ผู้ใช้กำลังแก้ไขอยู่
+  if (firstReveal) {
+    byId('results').scrollIntoView({ behavior: 'smooth' })
+  }
 }
 
 // ---------- Day-by-day detail (gated by <details> disclosure) ----------

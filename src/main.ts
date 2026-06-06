@@ -111,31 +111,34 @@ function renderTiers(): void {
     tierDiv.innerHTML = `
       <div class="tier-item">
           <div>
-              <div class="tier-label">จำนวนเงินขั้นต่ำ (บาท)</div>
+              <label for="tier-${index}-min" class="tier-label">จำนวนเงินขั้นต่ำ (บาท)</label>
               <input type="text"
+                     id="tier-${index}-min"
                      value="${formatNumber(tier.min)}"
                      inputmode="decimal"
                      placeholder="0.00"
                      data-index="${index}" data-field="min" data-format="comma">
           </div>
           <div>
-              <div class="tier-label">จำนวนเงินสูงสุด (บาท)</div>
+              <label for="tier-${index}-max" class="tier-label">จำนวนเงินสูงสุด (บาท)</label>
               <input type="text"
+                     id="tier-${index}-max"
                      value="${tier.max ? formatNumber(tier.max) : ''}"
                      inputmode="decimal"
                      placeholder="ไม่จำกัด"
                      data-index="${index}" data-field="max" data-format="comma">
           </div>
           <div>
-              <div class="tier-label">อัตราดอกเบี้ย (% ต่อปี)</div>
+              <label for="tier-${index}-rate" class="tier-label">อัตราดอกเบี้ย (% ต่อปี)</label>
               <input type="text"
+                     id="tier-${index}-rate"
                      value="${tier.rate}"
                      inputmode="decimal"
                      placeholder="0.00"
                      data-index="${index}" data-field="rate">
           </div>
           <div>
-              ${tiers.length > 1 ? `<button class="btn btn-danger" data-action="removeTier" data-index="${index}">ลบ</button>` : ''}
+              ${tiers.length > 1 ? `<button class="btn btn-danger" data-action="removeTier" data-index="${index}" aria-label="ลบชั้นอัตราดอกเบี้ยที่ ${index + 1}">ลบ</button>` : ''}
           </div>
       </div>
     `
@@ -187,7 +190,7 @@ function renderTransactions(): void {
   container.innerHTML = ''
 
   if (transactions.length === 0) {
-    container.innerHTML = '<p style="color:#999;text-align:center;padding:10px;">ยังไม่มีรายการฝาก/ถอน — กดปุ่มด้านล่างเพื่อเพิ่ม</p>'
+    container.innerHTML = '<p class="empty-state">ยังไม่มีรายการฝาก/ถอน กดปุ่มด้านล่างเพื่อเพิ่ม</p>'
     return
   }
 
@@ -197,29 +200,32 @@ function renderTransactions(): void {
     txDiv.innerHTML = `
       <div class="tier-item">
           <div>
-              <div class="tier-label">วันที่ทำรายการ</div>
+              <label for="tx-${index}-date" class="tier-label">วันที่ทำรายการ</label>
               <input type="date"
+                     id="tx-${index}-date"
                      value="${tx.date}"
                      data-index="${index}" data-field="date">
           </div>
           <div>
-              <div class="tier-label">ประเภท</div>
-              <select data-index="${index}" data-field="type"
+              <label for="tx-${index}-type" class="tier-label">ประเภท</label>
+              <select id="tx-${index}-type"
+                      data-index="${index}" data-field="type"
                       style="padding:10px;border:2px solid #e0e0e0;border-radius:6px;font-size:0.9rem;width:100%;">
                   <option value="in"  ${tx.type === 'in' ? 'selected' : ''}>💰 ฝากเพิ่ม (Fund In)</option>
                   <option value="out" ${tx.type === 'out' ? 'selected' : ''}>💸 ถอน (Fund Out)</option>
               </select>
           </div>
           <div>
-              <div class="tier-label">จำนวนเงิน (บาท)</div>
+              <label for="tx-${index}-amount" class="tier-label">จำนวนเงิน (บาท)</label>
               <input type="text"
+                     id="tx-${index}-amount"
                      value="${formatNumber(tx.amount)}"
                      inputmode="decimal"
                      placeholder="0.00"
                      data-index="${index}" data-field="amount" data-format="comma">
           </div>
           <div>
-              <button class="btn btn-danger" data-action="removeTransaction" data-index="${index}">ลบ</button>
+              <button class="btn btn-danger" data-action="removeTransaction" data-index="${index}" aria-label="ลบรายการฝากถอนที่ ${index + 1}">ลบ</button>
           </div>
       </div>
     `
@@ -285,20 +291,29 @@ function formatNumber(value: Decimal.Value, decimals: number = 2): string {
   return parts.join('.')
 }
 
+// การ์ดที่มีค่ายาวเกินขนาด grid cell (>= 12 หลัก) จะถูกแยกออกเป็น full-width row
+// เพื่อไม่ให้ track ของ auto-fit grid ขยายจนเบียดการ์ดอื่น
+function shouldRenderWide(formatted: string): boolean {
+  return formatted.replace(/\D/g, '').length > 11
+}
+
 // ตรวจสอบความถูกต้องของข้อมูล
 function validateInputs(): boolean {
   let isValid = true
 
   // ล้างข้อผิดพลาดก่อนหน้า
   document.querySelectorAll('.error').forEach((el) => el.classList.remove('show'))
-  document.querySelectorAll('input').forEach((el) => el.classList.remove('input-error'))
+  document.querySelectorAll('input, select').forEach((el) => {
+    el.classList.remove('input-error')
+    el.removeAttribute('aria-invalid')
+  })
   byId('tierError').textContent = 'กรุณาตั้งค่าอัตราดอกเบี้ยอย่างน้อย 1 ชั้น'
 
   // ตรวจสอบจำนวนเงินฝาก
   const depositAmount = parseInputValue(byId<HTMLInputElement>('depositAmount').value)
-  if (!depositAmount || parseFloat(depositAmount) <= 0) {
-    byId('depositError').classList.add('show')
-    byId('depositAmount').classList.add('input-error')
+  const depositNum = parseFloat(depositAmount)
+  if (!depositAmount || isNaN(depositNum) || depositNum <= 0) {
+    markError('depositError', 'depositAmount')
     isValid = false
   }
 
@@ -307,18 +322,15 @@ function validateInputs(): boolean {
   const endDate = byId<HTMLInputElement>('endDate').value
 
   if (!startDate) {
-    byId('startDateError').classList.add('show')
-    byId('startDate').classList.add('input-error')
+    markError('startDateError', 'startDate')
     isValid = false
   }
 
   if (!endDate) {
-    byId('endDateError').classList.add('show')
-    byId('endDate').classList.add('input-error')
+    markError('endDateError', 'endDate')
     isValid = false
   } else if (startDate && new Date(endDate) <= new Date(startDate)) {
-    byId('endDateError').classList.add('show')
-    byId('endDate').classList.add('input-error')
+    markError('endDateError', 'endDate')
     isValid = false
   }
 
@@ -328,7 +340,8 @@ function validateInputs(): boolean {
     isValid = false
   } else {
     for (const tier of tiers) {
-      if (!tier.min || !tier.rate || parseFloat(tier.rate) < 0) {
+      const rateNum = parseFloat(tier.rate)
+      if (!tier.min || !tier.rate || isNaN(rateNum) || rateNum < 0) {
         byId('tierError').textContent = 'กรุณากรอกข้อมูลชั้นอัตราดอกเบี้ยให้ครบถ้วน'
         byId('tierError').classList.add('show')
         isValid = false
@@ -340,7 +353,8 @@ function validateInputs(): boolean {
   // ตรวจสอบรายการฝาก/ถอน
   if (transactions.length > 0 && startDate && endDate) {
     for (const tx of transactions) {
-      const txInvalid = !tx.date || tx.date < startDate || tx.date > endDate || parseFloat(tx.amount) <= 0
+      const txAmount = parseFloat(tx.amount)
+      const txInvalid = !tx.date || tx.date < startDate || tx.date > endDate || isNaN(txAmount) || txAmount <= 0
       if (txInvalid) {
         byId('transactionError').classList.add('show')
         isValid = false
@@ -350,6 +364,16 @@ function validateInputs(): boolean {
   }
 
   return isValid
+}
+
+// Mark an input as errored: show its error div and set both the visual
+// class and the screen-reader aria-invalid flag. Keeps validation
+// callsites short and consistent.
+function markError(errorId: string, inputId: string): void {
+  byId(errorId).classList.add('show')
+  const input = byId<HTMLInputElement>(inputId)
+  input.classList.add('input-error')
+  input.setAttribute('aria-invalid', 'true')
 }
 
 // ตรวจสอบว่าเป็นปีอธิกสุรทิน (Leap year)
@@ -669,6 +693,9 @@ function calculate(): void {
     return
   }
 
+  enableShareButton()
+  setRecalculateMode(true)
+
   // รับค่าจากฟอร์ม
   const depositAmount = parseInputValue(byId<HTMLInputElement>('depositAmount').value)
   const startDate = byId<HTMLInputElement>('startDate').value
@@ -719,47 +746,72 @@ function displayResults(
   const depositAmount = parseInputValue(byId<HTMLInputElement>('depositAmount').value)
   const interestType = byId<HTMLSelectElement>('interestType').value
 
+  // Reveal the result cards with a stagger only on the first show of this
+  // calculation session. Live recompute (after the user starts editing again)
+  // updates the values in place without re-firing the entrance animation.
+  const firstReveal = !hasRevealedResults
+  if (firstReveal) {
+    const resultsEl = byId('results')
+    resultsEl.setAttribute('data-reveal', '1')
+    hasRevealedResults = true
+    window.setTimeout(() => resultsEl.removeAttribute('data-reveal'), 700)
+  }
+
   // แสดงสรุปผล
+  const cardClass = (base: string, wide: boolean) =>
+    wide ? `${base} result-card--wide` : base
+  const depositStr = formatNumber(depositAmount)
+  const daysStr = String(totalDays)
+  const interestStr = formatNumber(totalInterest)
+  const finalStr = formatNumber(finalAmount)
+  const depositWide = shouldRenderWide(depositStr)
+  const daysWide = shouldRenderWide(daysStr)
+  const interestWide = shouldRenderWide(interestStr)
+  const finalWide = shouldRenderWide(finalStr)
+
   let summaryHTML = `
-    <div class="result-card">
+    <div class="${cardClass('result-card', depositWide)}" style="--i: 0">
         <div class="label">จำนวนเงินฝาก</div>
-        <div class="value">${formatNumber(depositAmount)} ฿</div>
+        <div class="value">${depositStr} ฿</div>
     </div>
-    <div class="result-card">
+    <div class="${cardClass('result-card', daysWide)}" style="--i: 1">
         <div class="label">จำนวนวันทั้งหมด</div>
-        <div class="value">${totalDays}</div>
+        <div class="value">${daysStr}</div>
     </div>
-    <div class="result-card highlight">
+    <div class="${cardClass('result-card highlight', interestWide)}" style="--i: 2">
         <div class="label">ดอกเบี้ยทั้งหมด</div>
-        <div class="value">${formatNumber(totalInterest)} ฿</div>
+        <div class="value">${interestStr} ฿</div>
     </div>`
 
   // เพิ่มแสดง Interest Accrued ถ้ามี
   if (accruedInterest && parseFloat(accruedInterest) > 0) {
+    const accruedStr = formatNumber(accruedInterest)
+    const accruedWide = shouldRenderWide(accruedStr)
     summaryHTML += `
-    <div class="result-card">
-        <div class="label">ดอกเบี้ยค้างจ่าย (ยังไม่ apply)</div>
-        <div class="value" style="color: #ff9800; font-weight: bold;">${formatNumber(accruedInterest)} ฿</div>
+    <div class="${cardClass('result-card highlight--warning', accruedWide)}" style="--i: 3">
+        <div class="label">ดอกเบี้ยค้างจ่าย</div>
+        <div class="value">${accruedStr} ฿</div>
     </div>`
   }
 
   summaryHTML += `
-    <div class="result-card highlight">
+    <div class="${cardClass('result-card highlight', finalWide)}" style="--i: ${accruedInterest && parseFloat(accruedInterest) > 0 ? 4 : 3}">
         <div class="label">ยอดรวมทั้งสิ้น</div>
-        <div class="value">${formatNumber(finalAmount)} ฿</div>
+        <div class="value">${finalStr} ฿</div>
     </div>
   `
   byId('resultSummary').innerHTML = summaryHTML
-  byId('shareContainer').innerHTML = '<button id="shareBtn" class="btn btn-share">🔗 Copy share link</button>'
+  byId('shareContainer').innerHTML = '<button id="shareBtn" class="btn btn-share">🔗 แชร์ค่านี้</button>'
 
   // แสดงตารางแบ่งตามชั้น
   let tierTableHTML = `
+    <caption class="visually-hidden">รายละเอียดดอกเบี้ยตามช่วงจำนวนเงินและอัตราดอกเบี้ย</caption>
     <thead>
         <tr>
-            <th>ช่วงจำนวนเงิน (บาท)</th>
-            <th class="text-right">อัตราดอกเบี้ย (%)</th>
-            <th class="text-right">จำนวนเงินในชั้น (บาท)</th>
-            <th class="text-right">ดอกเบี้ย (บาท)</th>
+            <th scope="col">ช่วงจำนวนเงิน (บาท)</th>
+            <th scope="col" class="text-right">อัตราดอกเบี้ย (%)</th>
+            <th scope="col" class="text-right">จำนวนเงินในชั้น (บาท)</th>
+            <th scope="col" class="text-right">ดอกเบี้ย (บาท)</th>
         </tr>
     </thead>
     <tbody>
@@ -783,26 +835,173 @@ function displayResults(
   tierTableHTML += '</tbody>'
   byId('tierBreakdownTable').innerHTML = tierTableHTML
 
-  // แสดงตารางรายละเอียดดอกเบี้ยรายวันของแต่ละชั้น แบ่งตามเดือน
+  // Day-by-day detail: gated by a <details> disclosure. The build is
+  // expensive (1945 rows on a 5-year term) so we only run it when the
+  // user has actually opened the disclosure. If closed, we just
+  // remember the inputs fingerprint; the next open will rebuild then.
+  const dayByDayFingerprint = computeDayByDayFingerprint(
+    depositAmount, interestType,
+    byId<HTMLInputElement>('startDate').value,
+    byId<HTMLInputElement>('endDate').value,
+    byId<HTMLSelectElement>('interestApply').value,
+    tiers, transactions,
+  )
+  lastDayByDayFingerprint = dayByDayFingerprint
+  if (isDailyDetailsOpen()) {
+    // Only rebuild the (expensive, ~1945-row) table when the inputs that
+    // feed it actually changed. A recompute triggered by editing an
+    // unrelated field leaves the fingerprint untouched, so we skip it.
+    if (lastDayByDayBuiltFingerprint !== dayByDayFingerprint) buildDailyDetail()
+  } else {
+    // Show the "stale" hint only if the user has previously opened
+    // the disclosure and then closed it. New users see the
+    // collapsed-by-default state and don't need the hint.
+    const hint = byId('dailySummaryHint')
+    if (hint && lastDayByDayBuiltFingerprint !== null) hint.textContent = 'กดเพื่ออัปเดต'
+  }
+
+  // แสดงตารางตามการ apply ดอกเบี้ย
+  let applyTableHTML = `
+    <caption class="visually-hidden">รายละเอียดดอกเบี้ยรายเดือนพร้อมยอดคงเหลือ ดอกเบี้ยค้างจ่าย และสถานะการนำเข้า</caption>
+    <thead>
+        <tr>
+            <th scope="col">วันที่ / ช่วงเวลา</th>
+            <th scope="col" class="text-right">จำนวนวัน</th>
+            <th scope="col" class="text-right">ยอดคงเหลือ (บาท)</th>
+            <th scope="col" class="text-right">ดอกเบี้ย (บาท)</th>
+            <th scope="col" class="text-right">ดอกเบี้ยค้างจ่าย (บาท)</th>
+            <th scope="col" class="text-right">ดอกเบี้ยสะสม (บาท)</th>
+            <th scope="col">สถานะ</th>
+        </tr>
+    </thead>
+    <tbody>
+  `
+
+  monthlyBreakdown.forEach((entry) => {
+    const dateDisplay = entry.date
+    const status = entry.applied ? '✓ Applied' : 'Accrued'
+    const statusColor = entry.applied ? 'color: #28a745;' : 'color: #ff9800;'
+
+    // แสดงแถว transaction (Fund In / Fund Out) ก่อนแถวสรุปเดือน
+    if (entry.transactions && entry.transactions.length > 0) {
+      entry.transactions.forEach((tx) => {
+        const txColor = tx.type === 'in' ? '#e8f5e9' : '#fce4ec'
+        const txLabel = tx.type === 'in' ? '💰 Fund In' : '💸 Fund Out'
+        const txTextColor = tx.type === 'in' ? '#2e7d32' : '#c62828'
+        applyTableHTML += `
+            <tr style="background:${txColor};">
+                <td style="color:${txTextColor};font-weight:600;">${tx.date}</td>
+                <td class="text-right" style="color:${txTextColor};font-weight:600;" colspan="2">${txLabel}: ${formatNumber(tx.amount)} ฿</td>
+                <td class="text-right" colspan="3" style="color:#555;">ยอดก่อน: ${formatNumber(tx.balanceBefore)} ฿ → ยอดหลัง: <strong>${formatNumber(tx.balanceAfter)} ฿</strong></td>
+                <td style="color:${txTextColor};">รายการ ฝาก/ถอน</td>
+            </tr>
+        `
+      })
+    }
+
+    applyTableHTML += `
+        <tr>
+            <td>${dateDisplay}</td>
+            <td class="text-right">${entry.days}</td>
+            <td class="text-right">${formatNumber(entry.balance)}</td>
+            <td class="text-right">${formatNumber(entry.interest, 10)}</td>
+            <td class="text-right"><strong>${formatNumber(entry.accrued || '0', 10)}</strong></td>
+            <td class="text-right">${formatNumber(entry.cumulative, 10)}</td>
+            <td style="${statusColor}"><strong>${status}</strong></td>
+        </tr>
+    `
+  })
+
+  applyTableHTML += '</tbody>'
+  byId('monthlyBreakdownTable').innerHTML = applyTableHTML
+
+  // แสดงส่วนผลลัพธ์
+  byId('results').classList.add('show')
+
+  // เลื่อนไปยังผลลัพธ์เฉพาะตอนแสดงผลครั้งแรกของรอบการคำนวณ — live recompute
+  // ระหว่างพิมพ์ต้องไม่ดึงหน้าจอออกจากช่องที่ผู้ใช้กำลังแก้ไขอยู่
+  if (firstReveal) {
+    byId('results').scrollIntoView({ behavior: 'smooth' })
+  }
+}
+
+// ---------- Day-by-day detail (gated by <details> disclosure) ----------
+
+// Inputs that affect the day-by-day build. Hashed into a single string
+// so we can skip the rebuild when nothing has structurally changed.
+function computeDayByDayFingerprint(
+  depositAmount: string,
+  interestType: string,
+  startDate: string,
+  endDate: string,
+  applyType: string,
+  tiersList: Tier[],
+  txList: Transaction[],
+): string {
+  const tierPart = tiersList.map((t) => `${t.min}|${t.max}|${t.rate}`).join(';')
+  const txPart = txList.map((t) => `${t.date}|${t.type}|${t.amount}`).join(';')
+  return [depositAmount, interestType, startDate, endDate, applyType, tierPart, txPart].join('::')
+}
+
+function isDailyDetailsOpen(): boolean {
+  return byId<HTMLDetailsElement>('dailyDetails').open
+}
+
+// Build the day-by-day table HTML and write it into the disclosure's
+// content slot. Called when the disclosure is opened, or when the
+// disclosure is open and a recompute has produced new inputs.
+function buildDailyDetail(): void {
+  const container = byId('dailyDetailContent')
+  const depositAmount = parseInputValue(byId<HTMLInputElement>('depositAmount').value)
+  const interestType = byId<HTMLSelectElement>('interestType').value
   const depositStartDate = byId<HTMLInputElement>('startDate').value
   const depositEndDate = byId<HTMLInputElement>('endDate').value
   const depositApplyType = byId<HTMLSelectElement>('interestApply').value
 
+  // Estimate build cost from the term length. Short terms build fast
+  // enough that the skeleton would only flash; skip the defer so the
+  // first paint is the real table. Long terms show the skeleton and
+  // defer one frame so the placeholder is visible.
+  const termDays = daysBetween(depositStartDate, depositEndDate)
+  const isLongBuild = termDays > 365
+
+  const finalize = (): void => {
+    const html = buildDailyDetailHTML(
+      depositAmount, interestType, depositStartDate, depositEndDate, depositApplyType,
+    )
+    container.classList.remove('is-building')
+    container.innerHTML = html
+    lastDayByDayBuiltFingerprint = lastDayByDayFingerprint
+  }
+
+  if (isLongBuild) {
+    container.classList.add('is-building')
+    container.textContent = 'กำลังสร้างตารางรายวัน…'
+    // Defer the actual work one frame so the skeleton paints first.
+    requestAnimationFrame(finalize)
+  } else {
+    finalize()
+  }
+}
+
+function buildDailyDetailHTML(
+  depositAmount: string,
+  interestType: string,
+  depositStartDate: string,
+  depositEndDate: string,
+  depositApplyType: string,
+): string {
   const start = new Date(depositStartDate)
   const end = new Date(depositEndDate)
   let currentBalance = new Decimal(depositAmount)
-
-  // สร้างตารางรายวันแบ่งตามเดือน
-  const dailyDetailSection = document.createElement('div')
-  dailyDetailSection.className = 'section'
-  let sectionHTML = `<h3 style="color: #333; margin-bottom: 15px;">รายละเอียดการคิดดอกเบี้ยรายวันของแต่ละชั้น (แบ่งตามเดือน)</h3>`
 
   // เตรียม validDisplayTxs สำหรับใช้ในทุกเดือน
   const validDisplayTxs = [...transactions]
     .filter((tx) => tx.date >= depositStartDate && tx.date <= depositEndDate && parseFloat(tx.amount) > 0)
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
-  // วนลูปแต่ละเดือน
+  const allSortedTiers = [...tiers].sort((a, b) => parseFloat(a.min) - parseFloat(b.min))
+  let sectionHTML = ''
   const tempDate = new Date(start.getFullYear(), start.getMonth(), 1)
   let monthCount = 0
 
@@ -874,22 +1073,26 @@ function displayResults(
 
     // สร้างตารางรายวันสำหรับเดือนนี้
     let dailyDetailHTML = `
-        <div style="margin-bottom: 20px; border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px;">
-        <h4 style="color: #0369a1; margin-bottom: 10px;">${monthDisplay} [${actualMonthStart.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' })} - ${actualEnd.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' })}] (Start Balance: ${formatNumber(balanceBeforeApply.toString())} ฿, End Balance: ${depositApplyType !== 'daily' ? formatNumber(currentBalance.toString()) : '__END_BAL__'} ฿)</h4>
-        <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
-        <table style="width: 100%; border-collapse: collapse; background: white; font-size: 0.9rem;">
+        <div class="daily-month">
+        <div class="daily-month-header">
+            <span class="month-name">${monthDisplay}</span>
+            <span class="date-range">[${actualMonthStart.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' })} - ${actualEnd.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' })}]</span>
+            <span class="balance-pair">Start: ${formatNumber(balanceBeforeApply.toString())} ฿ → End: ${depositApplyType !== 'daily' ? formatNumber(currentBalance.toString()) : '__END_BAL__'} ฿</span>
+        </div>
+        <div class="daily-month-body">
+        <table>
+            <caption class="visually-hidden">ดอกเบี้ยรายวันของ ${monthDisplay} แยกตามชั้นอัตราดอกเบี้ย</caption>
             <thead>
-                <tr style="background: #f0f0f0;">
-                    <th style="padding: 8px; border: 1px solid #ddd;">วันที่</th>
+                <tr>
+                    <th scope="col">วันที่</th>
     `
 
-    // เพิ่ม header สำหรับแต่ละชั้น — ใช้ทุก tier ที่กำหนด
-    const allSortedTiers = [...tiers].sort((a, b) => parseFloat(a.min) - parseFloat(b.min))
+    // เพิ่ม header สำหรับแต่ละชั้น (ใช้ทุก tier ที่กำหนด)
     allSortedTiers.forEach((tier) => {
       const range = tier.max
         ? `${formatNumber(tier.min)}-${formatNumber(tier.max)}`
         : `${formatNumber(tier.min)}+`
-      dailyDetailHTML += `<th style="padding: 8px; border: 1px solid #7dd3fc; text-align: right; background: #0284c7; color: white;">${range}<br>${formatNumber(tier.rate, 2)}%</th>`
+      dailyDetailHTML += `<th scope="col" class="text-right tier-header">${range}<br>${formatNumber(tier.rate, 2)}%</th>`
     })
 
     dailyDetailHTML += `</tr></thead><tbody>`
@@ -912,19 +1115,17 @@ function displayResults(
           ? dayBalanceInMonth.plus(txAmt)
           : Decimal.max(new Decimal(0), dayBalanceInMonth.minus(txAmt))
         const txLabel = tx.type === 'in' ? '💰 Fund In' : '💸 Fund Out'
-        const txBg = tx.type === 'in' ? '#e8f5e9' : '#fce4ec'
-        const txTc = tx.type === 'in' ? '#2e7d32' : '#c62828'
-        dailyDetailHTML += `<tr style="background:${txBg};font-weight:600;">
-            <td style="padding:6px 8px;border:1px solid #ddd;color:${txTc};">${dateStr} ${txLabel}</td>`
+        dailyDetailHTML += `<tr class="tx-row tx-row--${tx.type}">
+            <td>${dateStr} ${txLabel}</td>`
         allSortedTiers.forEach(() => {
-          dailyDetailHTML += `<td style="padding:6px 8px;border:1px solid #ddd;text-align:right;color:${txTc};">
+          dailyDetailHTML += `<td class="text-right">
                 ${tx.type === 'in' ? '+' : '-'}${formatNumber(tx.amount)} ฿ → ${formatNumber(dayBalanceInMonth.toString())} ฿</td>`
         })
         dailyDetailHTML += `</tr>`
       }
 
       // แถวดอกเบี้ยรายวัน
-      dailyDetailHTML += `<tr><td style="padding: 8px; border: 1px solid #ddd;">${dateStr}</td>`
+      dailyDetailHTML += `<tr><td>${dateStr}</td>`
 
       // คิดดอกเบี้ยรายวันของแต่ละชั้น โดยใช้จำนวนวันจริงของปี และ balance ปัจจุบัน
       const year = currentDate.getFullYear()
@@ -945,10 +1146,8 @@ function displayResults(
         }
 
         tierMonthlyTotals[tierIndex] = tierMonthlyTotals[tierIndex].plus(dailyInterest)
-        const cellStyle = tierDataForDay
-          ? `padding: 8px; border: 1px solid #ddd; text-align: right; font-size: 0.85rem;`
-          : `padding: 8px; border: 1px solid #ddd; text-align: right; font-size: 0.85rem; color: #bbb;`
-        dailyDetailHTML += `<td style="${cellStyle}">${formatNumber(dailyInterest.toString(), 10)}</td>`
+        const cellClass = tierDataForDay ? 'text-right day-cell' : 'text-right day-cell day-cell--empty'
+        dailyDetailHTML += `<td class="${cellClass}">${formatNumber(dailyInterest.toString(), 10)}</td>`
       })
 
       dailyDetailHTML += `</tr>`
@@ -977,23 +1176,24 @@ function displayResults(
     // สำหรับ daily: อัพเดท currentBalance จาก dayBalanceInMonth ที่ compound แล้ว
     if (depositApplyType === 'daily') {
       currentBalance = new Decimal(dayBalanceInMonth)
+      // Replace the placeholder we left in the header for daily mode
+      // (only one occurrence per month — replace the first one).
       dailyDetailHTML = dailyDetailHTML.replace('__END_BAL__', formatNumber(currentBalance.toString()))
     }
-    dailyDetailHTML += `<tr style="font-weight: bold; border-top: 2px solid #7dd3fc;">`
-    dailyDetailHTML += `<td style="padding: 8px; border: 1px solid #bae6fd; background: #e0f2fe; color: #0369a1;">รวมดอกเบี้ยแต่ละชั้น</td>`
+    dailyDetailHTML += `<tr class="monthly-totals">
+        <td>รวมดอกเบี้ยแต่ละชั้น</td>`
     tierMonthlyTotals.forEach((total) => {
-      dailyDetailHTML += `<td style="padding: 8px; border: 1px solid #bae6fd; background: #e0f2fe; text-align: right; color: #0369a1;">${formatNumber(total.toString(), 10)}</td>`
+      dailyDetailHTML += `<td class="text-right">${formatNumber(total.toString(), 10)}</td>`
     })
     dailyDetailHTML += `</tr>`
 
     // แถวสรุปดอกเบี้ยรวมทั้งหมดของเดือนนี้
-    dailyDetailHTML += `<tr style="font-weight: bold;">`
-    dailyDetailHTML += `<td style="padding: 10px 8px; border: 1px solid #0369a1; background: #0284c7; color: #fff;">รวมดอกเบี้ยเดือนนี้</td>`
+    dailyDetailHTML += `<tr class="monthly-grand-total"><td>รวมดอกเบี้ยเดือนนี้</td>`
     tierMonthlyTotals.forEach((_, idx) => {
       if (idx === tierMonthlyTotals.length - 1) {
-        dailyDetailHTML += `<td style="padding: 10px 8px; border: 1px solid #0369a1; background: #0284c7; text-align: right; color: #fff; font-size: 1rem;">${formatNumber(grandTotalMonth.toString(), 10)}</td>`
+        dailyDetailHTML += `<td class="text-right">${formatNumber(grandTotalMonth.toString(), 10)}</td>`
       } else {
-        dailyDetailHTML += `<td style="padding: 10px 8px; border: 1px solid #0369a1; background: #0284c7;"></td>`
+        dailyDetailHTML += `<td class="text-right"></td>`
       }
     })
     dailyDetailHTML += `</tr>`
@@ -1005,84 +1205,7 @@ function displayResults(
     monthCount++
   }
 
-  dailyDetailSection.innerHTML = sectionHTML
-
-  // แทรกตารางใหม่หลังตารางชั้นอัตราเดิม
-  const tierBreakdownTable = document.getElementById('tierBreakdownTable')
-  if (tierBreakdownTable) {
-    const tierSection = tierBreakdownTable.closest('.section')
-    if (tierSection && tierSection.parentElement) {
-      const parent = tierSection.parentElement
-      // ลบตารางเก่าถ้ามี
-      const oldDailySection = parent.querySelector('[data-daily-detail]')
-      if (oldDailySection) {
-        oldDailySection.remove()
-      }
-      // เพิ่ม data attribute เพื่อระบุตารางนี้
-      dailyDetailSection.setAttribute('data-daily-detail', 'true')
-      parent.insertBefore(dailyDetailSection, tierSection.nextSibling)
-    }
-  }
-
-  // แสดงตารางตามการ apply ดอกเบี้ย
-  let applyTableHTML = `
-    <thead>
-        <tr>
-            <th>วันที่ / ช่วงเวลา</th>
-            <th class="text-right">จำนวนวัน</th>
-            <th class="text-right">ยอดคงเหลือ (บาท)</th>
-            <th class="text-right">ดอกเบี้ย (บาท)</th>
-            <th class="text-right">ดอกเบี้ยค้างจ่าย (บาท)</th>
-            <th class="text-right">ดอกเบี้ยสะสม (บาท)</th>
-            <th>สถานะ</th>
-        </tr>
-    </thead>
-    <tbody>
-  `
-
-  monthlyBreakdown.forEach((entry) => {
-    const dateDisplay = entry.date
-    const status = entry.applied ? '✓ Applied' : 'รอ Apply'
-    const statusColor = entry.applied ? 'color: #28a745;' : 'color: #ff9800;'
-
-    // แสดงแถว transaction (Fund In / Fund Out) ก่อนแถวสรุปเดือน
-    if (entry.transactions && entry.transactions.length > 0) {
-      entry.transactions.forEach((tx) => {
-        const txColor = tx.type === 'in' ? '#e8f5e9' : '#fce4ec'
-        const txLabel = tx.type === 'in' ? '💰 Fund In' : '💸 Fund Out'
-        const txTextColor = tx.type === 'in' ? '#2e7d32' : '#c62828'
-        applyTableHTML += `
-            <tr style="background:${txColor};">
-                <td style="color:${txTextColor};font-weight:600;">${tx.date}</td>
-                <td class="text-right" style="color:${txTextColor};font-weight:600;" colspan="2">${txLabel}: ${formatNumber(tx.amount)} ฿</td>
-                <td class="text-right" colspan="3" style="color:#555;">ยอดก่อน: ${formatNumber(tx.balanceBefore)} ฿ → ยอดหลัง: <strong>${formatNumber(tx.balanceAfter)} ฿</strong></td>
-                <td style="color:${txTextColor};">— รายการ —</td>
-            </tr>
-        `
-      })
-    }
-
-    applyTableHTML += `
-        <tr>
-            <td>${dateDisplay}</td>
-            <td class="text-right">${entry.days}</td>
-            <td class="text-right">${formatNumber(entry.balance)}</td>
-            <td class="text-right">${formatNumber(entry.interest, 10)}</td>
-            <td class="text-right"><strong>${formatNumber(entry.accrued || '0', 10)}</strong></td>
-            <td class="text-right">${formatNumber(entry.cumulative, 10)}</td>
-            <td style="${statusColor}"><strong>${status}</strong></td>
-        </tr>
-    `
-  })
-
-  applyTableHTML += '</tbody>'
-  byId('monthlyBreakdownTable').innerHTML = applyTableHTML
-
-  // แสดงส่วนผลลัพธ์
-  byId('results').classList.add('show')
-
-  // เลื่อนไปยังผลลัพธ์
-  byId('results').scrollIntoView({ behavior: 'smooth' })
+  return sectionHTML
 }
 
 // ---------- Event wiring (delegation; survives re-renders) ----------
@@ -1090,13 +1213,43 @@ function wireEvents(): void {
   byId('addTierBtn').addEventListener('click', addTier)
   byId('addTransactionBtn').addEventListener('click', addTransaction)
   byId('calculateBtn').addEventListener('click', calculate)
+  byId('resetBtn').addEventListener('click', resetAll)
+  byId('shareBtnTop').addEventListener('click', copyShareLink)
+
+  // Live recompute: any change inside the form re-runs the calculation
+  // (debounced) once the user has produced a first result. Before the first
+  // calculate, the user has to press Calculate so validation errors surface
+  // deliberately rather than fighting the user mid-typing.
+  document.addEventListener('input', (e) => {
+    if (!isCalculated) return
+    const t = e.target as HTMLElement | null
+    if (t && t.closest('.content')) scheduleRecompute()
+  })
+  document.addEventListener('change', (e) => {
+    if (!isCalculated) return
+    const t = e.target as HTMLElement | null
+    if (t && t.closest('.content')) scheduleRecompute()
+  })
 
   byId<HTMLInputElement>('depositAmount').addEventListener('blur', (e) => {
     formatInputWithComma(e.target as HTMLInputElement)
   })
 
+  // Day-by-day disclosure: build on first open, rebuild on subsequent
+  // opens only if the inputs fingerprint has changed since the last
+  // build. Closing the disclosure keeps the table in the DOM (browser
+  // handles it natively) so reopening is instant.
+  byId<HTMLDetailsElement>('dailyDetails').addEventListener('toggle', () => {
+    if (!isCalculated) return
+    if (!isDailyDetailsOpen()) return
+    if (lastDayByDayBuiltFingerprint === lastDayByDayFingerprint) return
+    buildDailyDetail()
+  })
+
   const tiersC = byId('tiersContainer')
-  tiersC.addEventListener('change', (e) => {
+  // Use 'input' (not 'change') so live recompute sees the latest tier value
+  // on every keystroke. Comma formatting stays on focusout (below).
+  tiersC.addEventListener('input', (e) => {
     const t = e.target as HTMLInputElement
     const field = t.dataset.field
     if (field === 'min' || field === 'max' || field === 'rate') {
@@ -1114,12 +1267,20 @@ function wireEvents(): void {
   })
 
   const txC = byId('transactionsContainer')
-  txC.addEventListener('change', (e) => {
-    const t = e.target as HTMLInputElement | HTMLSelectElement
+  // 'input' (not 'change') so live recompute reflects transaction edits on
+  // every keystroke. 'change' on a select still fires correctly for type changes.
+  txC.addEventListener('input', (e) => {
+    const t = e.target as HTMLInputElement
     const field = t.dataset.field
-    if (field === 'date' || field === 'type' || field === 'amount') {
+    if (field === 'date' || field === 'amount') {
       const val = field === 'amount' ? parseInputValue(t.value) : t.value
       updateTransaction(Number(t.dataset.index), field, val)
+    }
+  })
+  txC.addEventListener('change', (e) => {
+    const t = e.target as HTMLSelectElement
+    if (t.dataset.field === 'type') {
+      updateTransaction(Number(t.dataset.index), 'type', t.value)
     }
   })
   txC.addEventListener('focusout', (e) => {
@@ -1188,16 +1349,147 @@ function restoreFromHash(): void {
 
 function copyShareLink(): void {
   const url = `${location.origin}${location.pathname}#cfg=${encodeState()}`
-  navigator.clipboard.writeText(url).catch(() => {
-    // clipboard API unavailable (non-HTTPS, non-localhost) — silently skip
-  })
-  const btn = byId<HTMLButtonElement>('shareBtn')
-  btn.textContent = '✓ Link copied!'
-  btn.classList.add('btn-share--copied')
-  setTimeout(() => {
-    btn.textContent = '🔗 Copy share link'
-    btn.classList.remove('btn-share--copied')
-  }, 2000)
+  // Try the modern Clipboard API first, then fall back to the deprecated
+  // document.execCommand('copy') for non-HTTPS origins, denied permissions,
+  // and embedded contexts where the API isn't available. The fallback path
+  // also surfaces a real failure state so the user knows to copy manually.
+  void navigator.clipboard.writeText(url).then(
+    () => { setShareButtons(true) },
+    () => { setShareButtons(tryFallbackCopy(url)) },
+  )
+}
+
+function setShareButtons(success: boolean): void {
+  const buttons: Array<{ id: string; idle: string }> = [
+    { id: 'shareBtnTop', idle: '🔗 แชร์ค่านี้' },
+    { id: 'shareBtn', idle: '🔗 แชร์ค่านี้' },
+  ]
+  for (const { id, idle } of buttons) {
+    const btn = document.getElementById(id) as HTMLButtonElement | null
+    if (!btn) continue
+    btn.classList.remove('btn-share--copied', 'btn-share--failed')
+    if (success) {
+      btn.textContent = '✓ คัดลอกลิงก์แล้ว'
+      btn.classList.add('btn-share--copied')
+    } else {
+      btn.textContent = '⚠ คัดลอกไม่สำเร็จ (เลือก URL แล้วกด Ctrl+C)'
+      btn.classList.add('btn-share--failed')
+    }
+    setTimeout(() => {
+      btn.textContent = idle
+      btn.classList.remove('btn-share--copied', 'btn-share--failed')
+    }, 2500)
+  }
+}
+
+function tryFallbackCopy(text: string): boolean {
+  // execCommand('copy') is deprecated but still the only reliable path
+  // for non-secure contexts and some embedded webviews. Wrap the
+  // selection in a transient, off-screen textarea.
+  const ta = document.createElement('textarea')
+  ta.value = text
+  ta.setAttribute('readonly', '')
+  ta.style.position = 'fixed'
+  ta.style.top = '0'
+  ta.style.left = '0'
+  ta.style.opacity = '0'
+  ta.style.pointerEvents = 'none'
+  document.body.appendChild(ta)
+  ta.select()
+  let ok = false
+  try {
+    // execCommand is deprecated but still the only universal fallback
+    // for clipboard writes outside secure contexts. The Clipboard API
+    // is tried first via writeText.
+    // @ts-ignore -- TS6387: deprecated, but the only universal clipboard fallback.
+    ok = document.execCommand('copy')
+  } catch { ok = false }
+  document.body.removeChild(ta)
+  return ok
+}
+
+// ---------- Reset (inline-confirm, 3s window) ----------
+
+let resetConfirmTimer: number | undefined
+
+function resetAll(): void {
+  const btn = byId<HTMLButtonElement>('resetBtn')
+
+  if (btn.dataset.confirming === '1') {
+    // Second click within window: actually reset.
+    if (resetConfirmTimer !== undefined) {
+      window.clearTimeout(resetConfirmTimer)
+      resetConfirmTimer = undefined
+    }
+    btn.dataset.confirming = ''
+    btn.classList.remove('btn-secondary--confirm')
+    btn.textContent = 'ล้างค่า'
+
+    tiers = [
+      { min: '0.00', max: '1000000.00', rate: '2.00' },
+      { min: '1000000.01', max: '2000000.00', rate: '1.50' },
+      { min: '2000000.01', max: '', rate: '0.50' },
+    ]
+    transactions = []
+    setDefaultDates()
+    byId<HTMLInputElement>('depositAmount').value = ''
+    byId<HTMLSelectElement>('interestType').value = 'simple'
+    byId<HTMLSelectElement>('interestApply').value = 'daily'
+    renderTiers()
+    renderTransactions()
+    byId('results').classList.remove('show')
+    byId<HTMLButtonElement>('shareBtnTop').disabled = true
+    setRecalculateMode(false)
+    hasRevealedResults = false
+    // Clear the day-by-day table and collapse the disclosure. The
+    // build cache resets so the next calculate starts from scratch.
+    byId<HTMLDetailsElement>('dailyDetails').open = false
+    byId('dailyDetailContent').innerHTML = '<p class="empty-state">กดหัวข้อด้านบนเพื่อสร้างตารางรายวัน</p>'
+    lastDayByDayFingerprint = null
+    lastDayByDayBuiltFingerprint = null
+    return
+  }
+
+  // First click: arm the inline-confirm window.
+  btn.dataset.confirming = '1'
+  btn.classList.add('btn-secondary--confirm')
+  btn.textContent = 'ล้างค่าทั้งหมด? (คลิกอีกครั้ง)'
+  resetConfirmTimer = window.setTimeout(() => {
+    btn.dataset.confirming = ''
+    btn.classList.remove('btn-secondary--confirm')
+    btn.textContent = 'ล้างค่า'
+    resetConfirmTimer = undefined
+  }, 3000)
+}
+
+function enableShareButton(): void {
+  byId<HTMLButtonElement>('shareBtnTop').disabled = false
+}
+
+// ---------- Live recompute + result reveal state ----------
+
+let isCalculated = false
+let hasRevealedResults = false
+let recomputeTimer: number | undefined
+
+// Day-by-day fingerprint cache: skip the rebuild when nothing
+// that affects the table has changed since the last build.
+let lastDayByDayFingerprint: string | null = null
+let lastDayByDayBuiltFingerprint: string | null = null
+
+function setRecalculateMode(on: boolean): void {
+  isCalculated = on
+  const btn = byId<HTMLButtonElement>('calculateBtn')
+  btn.textContent = on ? '🔄 คำนวณอีกครั้ง' : '🧮 คำนวณดอกเบี้ย'
+}
+
+function scheduleRecompute(): void {
+  if (!isCalculated) return
+  if (recomputeTimer !== undefined) window.clearTimeout(recomputeTimer)
+  recomputeTimer = window.setTimeout(() => {
+    recomputeTimer = undefined
+    if (validateInputs()) calculate()
+  }, 250)
 }
 
 // เริ่มต้นเมื่อโหลดหน้าเว็บ (module scripts ถูก defer → DOM พร้อมแล้ว)

@@ -1,319 +1,966 @@
+/* ============================================================
+   Tokens — design system primitives.
+   4pt spacing scale. Fixed rem type scale. Single sans family.
+   The product voice is "precise / trustworthy / clear"; the
+   visual system carries that by leaning on weight + scale,
+   not on color saturation.
+   ============================================================ */
+
+:root {
+  /* Spacing — 4pt base */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* Type — fixed rem, 1.2 ratio */
+  --text-xs: 0.75rem;     /* 12px */
+  --text-sm: 0.875rem;    /* 14px */
+  --text-base: 1rem;      /* 16px */
+  --text-md: 1.125rem;    /* 18px */
+  --text-lg: 1.25rem;     /* 20px */
+  --text-xl: 1.5rem;      /* 24px */
+  --text-2xl: 1.875rem;   /* 30px */
+  --text-3xl: 2.25rem;    /* 36px */
+  --text-4xl: 3rem;       /* 48px */
+
+  /* Type weights */
+  --w-regular: 400;
+  --w-medium: 500;
+  --w-semibold: 600;
+  --w-bold: 700;
+  --w-extra: 800;
+
+  /* Color — neutrals */
+  --ink: #0f172a;       /* slate-900, primary text */
+  --ink-2: #334155;     /* slate-700, body */
+  --ink-3: #64748b;     /* slate-500, labels */
+  --ink-4: #94a3b8;     /* slate-400, placeholders / muted */
+
+  --paper: #ffffff;     /* surface */
+  --paper-2: #fafbfc;   /* page bg */
+  --paper-3: #f1f5f9;   /* slate-100, subtle fill */
+
+  --rule: #e2e8f0;      /* slate-200, hairline */
+
+  /* Color — brand (sky) */
+  --sky-50: #f0f9ff;
+  --sky-100: #e0f2fe;
+  --sky-200: #bae6fd;
+  --sky-300: #7dd3fc;
+  --sky-600: #0284c7;   /* brand */
+  --sky-700: #0369a1;   /* brand deep */
+  --sky-800: #075985;
+
+  /* Color — semantic (all AA on white) */
+  --danger: #b91c1c;    /* red-700, ~6.0:1 on white */
+  --success: #15803d;   /* green-700, ~5.0:1 on white */
+  --warning: #b45309;   /* amber-700 */
+
+  /* Elevation */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 1px 2px rgba(15, 23, 42, 0.05), 0 4px 12px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 1px 2px rgba(15, 23, 42, 0.05), 0 12px 32px rgba(15, 23, 42, 0.08);
+
+  /* Geometry */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Easing — natural deceleration curves; reserved for the few
+     transitions that earn motion (reveal, feedback, focus). */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Type family — Thai-first stack; Sarabun + Noto Sans Thai
+     cover the common Thai-script rendering paths, Segoe UI
+     covers the Latin fallback on Windows, system-ui on macOS. */
+  --font-sans: 'Sarabun', 'Noto Sans Thai', system-ui, -apple-system, 'Segoe UI', Tahoma, sans-serif;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
-    min-height: 100vh;
-    padding: 20px;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--w-regular);
+  line-height: 1.55;
+  color: var(--ink-2);
+  background: var(--paper-2);
+  min-height: 100vh;
+  padding: clamp(16px, 4vw, 40px);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+h1, h2, h3, h4 {
+  color: var(--ink);
+  font-weight: var(--w-bold);
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+h1 { font-size: var(--text-2xl); }
+h2 { font-size: var(--text-xl); }
+h3 { font-size: var(--text-lg); }
+h4 { font-size: var(--text-md); }
+
+p { line-height: 1.6; }
+
+/* Visible focus indicator — applies to every interactive element */
+:focus-visible {
+  outline: 3px solid var(--sky-300);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ============================================================
+   Page shell
+   ============================================================ */
+
 .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(2, 132, 199, 0.2);
-    overflow: hidden;
+  max-width: 1200px;
+  margin: 0 auto;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
 }
 
 .header {
-    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-    color: white;
-    padding: 30px;
-    text-align: center;
+  background: linear-gradient(135deg, var(--sky-600) 0%, var(--sky-700) 100%);
+  color: #fff;
+  padding: var(--space-5) var(--space-6) var(--space-6);
+  position: relative;
+}
+
+.header-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  min-height: 44px;
 }
 
 .header h1 {
-    font-size: 2rem;
-    margin-bottom: 10px;
+  color: #fff;
+  font-size: var(--text-2xl);
+  font-weight: var(--w-bold);
+  margin-bottom: var(--space-2);
+  letter-spacing: -0.01em;
 }
 
 .header p {
-    opacity: 0.9;
-    font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: var(--text-base);
+  max-width: 60ch;
 }
 
 .content {
-    padding: 30px;
+  padding: var(--space-6);
 }
 
+@media (max-width: 640px) {
+  .header,
+  .content {
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+  .header h1 { font-size: var(--text-xl); }
+}
+
+/* ============================================================
+   Section structure
+   ============================================================ */
+
 .section {
-    margin-bottom: 30px;
+  margin-bottom: var(--space-7);
+}
+
+.section:last-child {
+  margin-bottom: 0;
 }
 
 .section-title {
-    font-size: 1.3rem;
-    color: #0369a1;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #7dd3fc;
+  font-size: var(--text-xl);
+  font-weight: var(--w-bold);
+  color: var(--ink);
+  margin-bottom: var(--space-5);
+  /* No bottom border. The voice says "precise / clear", not
+     "decorated". Weight + scale carry the hierarchy. */
 }
 
+/* Inline H3s that the legacy displayResults() writes into HTML
+   still get a sane baseline. */
+h3.legacy-inline {
+  color: var(--ink);
+  font-size: var(--text-lg);
+  font-weight: var(--w-semibold);
+  margin-bottom: var(--space-4);
+}
+
+/* ============================================================
+   Form controls
+   ============================================================ */
+
 .form-group {
-    margin-bottom: 20px;
+  margin-bottom: var(--space-4);
 }
 
 .form-group label {
-    display: block;
-    margin-bottom: 8px;
-    color: #555;
-    font-weight: 500;
+  display: block;
+  margin-bottom: var(--space-2);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: var(--w-medium);
 }
 
 .form-group input,
 .form-group select {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: border-color 0.3s;
+  width: 100%;
+  min-height: 44px;            /* touch-target floor */
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: var(--text-base);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.form-group input::placeholder {
+  color: var(--ink-4);
+}
+
+.form-group input:hover,
+.form-group select:hover {
+  border-color: var(--ink-4);
 }
 
 .form-group input:focus,
 .form-group select:focus {
-    outline: none;
-    border-color: #0284c7;
+  outline: none;
+  border-color: var(--sky-600);
+  box-shadow: 0 0 0 3px var(--sky-300);
 }
 
 .form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
 }
 
-@media (max-width: 768px) {
-    .form-row {
-        grid-template-columns: 1fr;
-    }
+@media (max-width: 640px) {
+  .form-row { grid-template-columns: 1fr; }
 }
+
+/* ============================================================
+   Tier and transaction rows
+   ============================================================ */
 
 .tier-container {
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 10px;
-    background: #f9f9f9;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+  background: var(--paper);
+}
+
+.tier-container:last-child {
+  margin-bottom: 0;
 }
 
 .tier-item {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr auto;
-    gap: 10px;
-    margin-bottom: 10px;
-    align-items: end;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: var(--space-3);
+  align-items: end;
 }
 
-@media (max-width: 768px) {
-    .tier-item {
-        grid-template-columns: 1fr;
-    }
+.tier-item .tier-label {
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+  margin-bottom: var(--space-1);
+  font-weight: var(--w-medium);
 }
 
-.tier-item input {
-    padding: 10px;
-    border: 2px solid #e0e0e0;
-    border-radius: 6px;
-    font-size: 0.9rem;
+.tier-item input,
+.tier-item select {
+  min-height: 44px;
+  padding: var(--space-3);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--paper);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
-.tier-item input:focus {
-    outline: none;
-    border-color: #0284c7;
+.tier-item input:focus,
+.tier-item select:focus {
+  outline: none;
+  border-color: var(--sky-600);
+  box-shadow: 0 0 0 3px var(--sky-300);
 }
+
+.tier-item input:hover,
+.tier-item select:hover {
+  border-color: var(--ink-4);
+}
+
+@media (max-width: 640px) {
+  .tier-item { grid-template-columns: 1fr; }
+  .tier-item > div:last-child { justify-self: start; }
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
 
 .btn {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s;
-    font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: var(--text-base);
+  font-weight: var(--w-semibold);
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
+  user-select: none;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-    color: white;
+  background: var(--sky-600);
+  color: #fff;
+  border-color: var(--sky-600);
 }
 
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(2, 132, 199, 0.4);
+.btn-primary:hover:not(:disabled) {
+  background: var(--sky-700);
+  border-color: var(--sky-700);
+}
+
+.btn-primary:active:not(:disabled) {
+  background: var(--sky-800);
 }
 
 .btn-secondary {
-    background: #6c757d;
-    color: white;
+  background: var(--paper);
+  color: var(--ink-2);
+  border-color: var(--rule);
 }
 
-.btn-secondary:hover {
-    background: #5a6268;
+.btn-secondary:hover:not(:disabled) {
+  background: var(--paper-3);
+  color: var(--ink);
+  border-color: var(--ink-4);
+}
+
+.btn-secondary--confirm {
+  background: var(--danger);
+  color: #fff;
+  border-color: var(--danger);
+}
+
+.btn-secondary--confirm:hover:not(:disabled) {
+  background: #991b1b;
+  border-color: #991b1b;
 }
 
 .btn-danger {
-    background: #dc3545;
-    color: white;
-    padding: 10px 15px;
-    font-size: 0.9rem;
+  background: var(--paper);
+  color: var(--danger);
+  border-color: var(--rule);
+  font-size: var(--text-sm);
+  padding: var(--space-2) var(--space-4);
 }
 
-.btn-danger:hover {
-    background: #c82333;
+.btn-danger:hover:not(:disabled) {
+  background: #fef2f2;
+  border-color: var(--danger);
 }
 
 .btn-add {
-    background: #0284c7;
-    color: white;
-    width: 100%;
-    margin-top: 10px;
+  background: var(--paper);
+  color: var(--sky-700);
+  border: 1px dashed var(--sky-300);
+  width: 100%;
+  margin-top: var(--space-3);
 }
 
-.btn-add:hover {
-    background: #0369a1;
+.btn-add:hover:not(:disabled) {
+  background: var(--sky-50);
+  border-color: var(--sky-600);
+  color: var(--sky-800);
+}
+
+.btn-share-top {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+}
+
+.btn-share-top:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: #fff;
+}
+
+.btn-share-top:disabled {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.55);
+  border-color: rgba(255, 255, 255, 0.25);
+  cursor: not-allowed;
+}
+
+.btn-share-top--copied,
+.btn-share-top--failed {
+  background: var(--success) !important;
+  border-color: var(--success) !important;
+  color: #fff !important;
+}
+
+.btn-share-top--failed {
+  background: var(--warning) !important;
+  border-color: var(--warning) !important;
+}
+
+/* Form actions — Calculate + Reset row */
+.form-actions {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+@media (max-width: 640px) {
+  .form-actions { grid-template-columns: 1fr; }
 }
 
 .btn-calculate {
-    width: 100%;
-    padding: 15px;
-    font-size: 1.1rem;
-    margin-top: 20px;
+  font-size: var(--text-md);
+  padding: var(--space-4);
 }
+
+/* ============================================================
+   Results
+   ============================================================ */
 
 .results {
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 20px;
-    margin-top: 30px;
-    display: none;
+  background: var(--paper-2);
+  border-top: 1px solid var(--rule);
+  padding: var(--space-6);
+  display: none;
+  margin-top: var(--space-7);
 }
 
-.results.show {
-    display: block;
-}
+.results.show { display: block; }
 
 .result-summary {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-7);
 }
 
 .result-card {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    text-align: center;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  text-align: left;
+  box-shadow: var(--shadow-sm);
 }
 
 .result-card .label {
-    color: #666;
-    font-size: 0.9rem;
-    margin-bottom: 8px;
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+  font-weight: var(--w-medium);
+  margin-bottom: var(--space-2);
 }
 
 .result-card .value {
-    color: #333;
-    font-size: 1.8rem;
-    font-weight: bold;
+  color: var(--ink);
+  font-size: var(--text-2xl);
+  font-weight: var(--w-bold);
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  /* Keep the baht number on a single line. The grid track grows to fit
+     the widest value, which is fine — the longest result is the headline
+     number anyway. */
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* "highlight" carries the data emphasis through weight + scale,
+   not through color tint. The product voice is "precise" — the
+   number looks like a number, not a colored chip. */
+.result-card.highlight {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.result-card.highlight .label {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .result-card.highlight .value {
-    color: #0284c7;
+  color: #fff;
+  font-size: var(--text-3xl);
+  font-weight: var(--w-extra);
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
+.result-card.highlight--warning {
+  background: var(--paper);
+  border-color: var(--warning);
 }
 
-th {
-    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-    color: white;
-    padding: 15px;
-    text-align: left;
-    font-weight: 500;
+.result-card.highlight--warning .value {
+  color: var(--warning);
+  font-size: var(--text-2xl);
+  font-weight: var(--w-bold);
 }
 
-td {
-    padding: 12px 15px;
-    border-bottom: 1px solid #e0e0e0;
+/* การ์ดที่มีค่ายาวเกิน grid cell จะถูกแยกเป็น full-width row เพื่อไม่ให้
+   track ของ auto-fit grid ขยายจนเบียดการ์ดอื่น */
+.result-card--wide {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  transition: grid-column 60ms var(--ease-out-quart),
+              font-size 60ms var(--ease-out-quart);
+}
+.result-card--wide .value { font-size: 28px; }
+
+/* เมื่อการ์ด highlight (ดอกเบี้ยทั้งหมด / ยอดรวมทั้งสิ้น) ขยายเป็น wide row
+   ให้ใช้ sky accent แทน dark hero เพื่อให้อ่านง่ายในแนวนอน */
+.result-card--wide.highlight {
+  background: var(--paper);
+  border: 2px solid var(--sky-700);
+}
+.result-card--wide.highlight .label { color: var(--sky-700); }
+.result-card--wide.highlight .value {
+  color: var(--sky-700);
+  font-weight: var(--w-extra);
+  font-size: 28px; /* override .highlight .value's --text-3xl (36px) */
 }
 
-tr:last-child td {
-    border-bottom: none;
+@media (max-width: 640px) {
+  /* Stack label above value on narrow phones so the long number gets
+     the full card width and stays on one line at a smaller size */
+  .result-card--wide {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .result-card--wide .value { font-size: 18px; }
+  .result-card--wide.highlight .value { font-size: 18px; }
 }
 
-tr:hover td {
-    background: #f5f5f5;
-}
-
-.text-right {
-    text-align: right;
-}
-
-.error {
-    color: #dc3545;
-    font-size: 0.9rem;
-    margin-top: 5px;
-    display: none;
-}
-
-.error.show {
-    display: block;
-}
-
-.input-error {
-    border-color: #dc3545 !important;
-}
-
-.tier-label {
-    font-size: 0.85rem;
-    color: #666;
-    margin-bottom: 5px;
-}
-
-@media (max-width: 768px) {
-    .header h1 {
-        font-size: 1.5rem;
-    }
-
-    .content {
-        padding: 20px;
-    }
-
-    .result-card .value {
-        font-size: 1.4rem;
-    }
-
-    table {
-        font-size: 0.9rem;
-    }
-
-    th, td {
-        padding: 10px 8px;
-    }
+#shareContainer {
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-6);
 }
 
 .btn-share {
-    background: #fff;
-    border: 2px solid #0284c7;
-    color: #0284c7;
-    margin-top: 16px;
-    width: 100%;
+  background: var(--paper);
+  color: var(--sky-700);
+  border: 1px solid var(--sky-300);
+  width: 100%;
+  margin-top: var(--space-3);
 }
 
-.btn-share--copied {
-    background: #16a34a !important;
-    border-color: #16a34a !important;
-    color: #fff !important;
+.btn-share:hover:not(:disabled) {
+  background: var(--sky-50);
+  border-color: var(--sky-600);
+  color: var(--sky-800);
+}
+
+.btn-share--copied,
+.btn-share--failed {
+  background: var(--success) !important;
+  border-color: var(--success) !important;
+  color: #fff !important;
+}
+
+.btn-share--failed {
+  background: var(--warning) !important;
+  border-color: var(--warning) !important;
+}
+
+/* ============================================================
+   Tables (apply + tier breakdown)
+   ============================================================ */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--space-4);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  font-size: var(--text-sm);
+}
+
+th {
+  background: var(--paper-3);
+  color: var(--ink);
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  font-weight: var(--w-semibold);
+  font-size: var(--text-sm);
+  border-bottom: 1px solid var(--rule);
+}
+
+td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink-2);
+  vertical-align: top;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+
+tbody tr:hover td { background: var(--paper-2); }
+
+.text-right { text-align: right; }
+
+.table-scroll {
+  overflow-x: auto;
+  margin-top: var(--space-3);
+}
+
+/* ============================================================
+   Errors
+   ============================================================ */
+
+.error {
+  color: var(--danger);
+  font-size: var(--text-sm);
+  margin-top: var(--space-2);
+  font-weight: var(--w-medium);
+  display: none;
+}
+
+.error.show { display: block; }
+
+.input-error {
+  border-color: var(--danger) !important;
+}
+
+.input-error:focus {
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.35) !important;
+}
+
+/* Empty-state helper used inside dynamically rendered lists
+   (e.g. transactions list when the user hasn't added any). */
+.empty-state {
+  color: var(--ink-4);
+  text-align: center;
+  padding: var(--space-3);
+}
+
+/* Visually hidden but available to assistive tech. Used for table
+   captions and field hints that would be redundant for sighted users. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ============================================================
+   Day-by-day table — visual structure only.
+   The body of these tables is generated with inline styles
+   in displayResults(); that refactor is a separate pass.
+   This pass restyles the outer wrapper, the month section
+   dividers, and the per-month header band so that
+   month boundaries are felt even before the refactor lands.
+   ============================================================ */
+
+.daily-section {
+  margin-top: var(--space-6);
+}
+
+.daily-section h3.legacy-inline {
+  margin-bottom: var(--space-5);
+}
+
+/* <details> wrapper for the day-by-day table.
+   Collapsed by default — building 1945 rows on every live recompute
+   was 382ms per keystroke. The user opens it when they want to
+   verify the math. */
+.daily-section > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  font-size: var(--text-lg);
+  font-weight: var(--w-semibold);
+  color: var(--ink);
+  user-select: none;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.daily-section > summary::-webkit-details-marker { display: none; }
+
+.daily-section > summary::before {
+  content: '▸';
+  font-size: var(--text-sm);
+  color: var(--ink-3);
+  transition: transform 150ms var(--ease-out-quart);
+  display: inline-block;
+}
+
+.daily-section[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.daily-section > summary:hover {
+  background: var(--paper-3);
+  border-color: var(--ink-4);
+}
+
+.daily-summary-hint {
+  font-size: var(--text-sm);
+  font-weight: var(--w-regular);
+  color: var(--ink-3);
+}
+
+.daily-section[open] .daily-summary-hint {
+  display: none;
+}
+
+#dailyDetailContent {
+  margin-top: var(--space-4);
+}
+
+#dailyDetailContent.is-building {
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+}
+
+.daily-month {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  background: var(--paper);
+  margin-bottom: var(--space-4);
+  overflow: hidden;
+}
+
+.daily-month-header {
+  padding: var(--space-3) var(--space-4);
+  background: var(--paper-3);
+  border-bottom: 1px solid var(--rule);
+  font-size: var(--text-sm);
+  font-weight: var(--w-semibold);
+  color: var(--ink);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.daily-month-header .date-range {
+  color: var(--ink-3);
+  font-weight: var(--w-regular);
+  font-size: var(--text-xs);
+}
+
+.daily-month-header .balance-pair {
+  margin-left: auto;
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+}
+
+.daily-month-body {
+  overflow-x: auto;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+/* Day-by-day table — the inner per-month table reuses the
+   global table/th/td rules. The day-by-day needs tighter
+   padding and the brand-tinted tier header. */
+.daily-month-body table {
+  font-size: var(--text-xs);
+  margin-top: 0;
+  border: none;
+  border-radius: 0;
+}
+
+.daily-month-body th,
+.daily-month-body td {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.daily-month-body .tier-header {
+  background: var(--sky-600);
+  color: #fff;
+  border-bottom: 1px solid var(--sky-700);
+}
+
+.daily-month-body .day-cell--empty {
+  color: var(--ink-4);
+}
+
+.daily-month-body .tx-row {
+  font-weight: var(--w-semibold);
+}
+
+.daily-month-body .tx-row--in {
+  background: #f0fdf4;
+}
+
+.daily-month-body .tx-row--in td:first-child {
+  color: var(--success);
+}
+
+.daily-month-body .tx-row--out {
+  background: #fef2f2;
+}
+
+.daily-month-body .tx-row--out td:first-child {
+  color: var(--danger);
+}
+
+.daily-month-body .monthly-totals td {
+  background: var(--sky-50);
+  color: var(--sky-700);
+  font-weight: var(--w-semibold);
+  border-top: 2px solid var(--sky-300);
+}
+
+.daily-month-body .monthly-grand-total td {
+  background: var(--sky-600);
+  color: #fff;
+  font-weight: var(--w-bold);
+  font-size: var(--text-sm);
+}
+
+/* ============================================================
+   Motion — reveal, feedback, micro-interactions.
+   All animations are bounded by the reduced-motion guard at
+   the bottom of the file. Animations are only applied on
+   specific events (results reveal, error shake) so a default
+   page-load never relies on motion to render content.
+   ============================================================ */
+
+@keyframes result-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.results[data-reveal='1'] .result-card {
+  animation: result-card-in 320ms var(--ease-out-quart) both;
+  animation-delay: calc(var(--i, 0) * 60ms);
+}
+
+@keyframes input-shake {
+  0%   { transform: translateX(0); }
+  25%  { transform: translateX(-3px); }
+  50%  { transform: translateX(3px); }
+  75%  { transform: translateX(-2px); }
+  100% { transform: translateX(0); }
+}
+
+.input-error {
+  animation: input-shake 180ms var(--ease-out-quart);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn-share-top:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Override the document-wide default to make sure stagger
+     and shake resolve in the same frame the class is applied. */
+  .results[data-reveal='1'] .result-card {
+    animation-delay: 0ms !important;
+  }
+  .input-error {
+    animation: none !important;
+  }
+  .btn-primary:active:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* ============================================================
+   Reduced motion — neutralise hover lift + transitions
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
